@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kamus ICD-10 Bahasa Indonesia</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f4f4f4; }
+    h1 { text-align: center; }
+    input { padding: 8px; margin: 10px 0; width: 100%; max-width: 500px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background-color: #ddd; }
+    .search-container { max-width: 600px; margin: auto; }
+  </style>
+</head>
+<body>
+  <h1>Kamus ICD-10 (Bahasa Indonesia)</h1>
+  <div class="search-container">
+    <input type="text" id="searchInput" placeholder="Cari kode atau nama diagnosa...">
+  </div>
+  <table id="icdTable">
+    <thead>
+      <tr>
+        <th>Kode ICD-10</th>
+        <th>Nama Diagnosa (English)</th>
+        <th>Nama Diagnosa (Indonesia)</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const tbody = document.querySelector("#icdTable tbody");
+    const searchInput = document.getElementById("searchInput");
+
+    function renderTable(data) {
+      tbody.innerHTML = "";
+      data.forEach(row => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${row.kode_icd}</td>
+          <td>${row.nama_icd}</td>
+          <td>${row.nama_icd_indo}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    fetch('ICD/master_icd_x.json')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Gagal memuat file JSON');
+        }
+        return response.json();
+      })
+      .then(data => {
+        renderTable(data);
+
+        searchInput.addEventListener("input", () => {
+          const query = searchInput.value.toLowerCase();
+          const filtered = data.filter(item =>
+            item.kode_icd.toLowerCase().includes(query) ||
+            item.nama_icd.toLowerCase().includes(query) ||
+            item.nama_icd_indo.toLowerCase().includes(query)
+          );
+          renderTable(filtered);
+        });
+      })
+      .catch(error => console.error('Error:', error));
+  </script>
+</body>
+</html>
